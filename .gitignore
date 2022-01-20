@@ -1,0 +1,11 @@
+# Byte-compiled
+__pycache__/
+*.py[cod]
+
+# Jupyter lab/notebook
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# build
+/build
+*.egg-info
