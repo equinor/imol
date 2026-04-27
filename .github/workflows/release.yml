@@ -19,10 +19,4 @@ jobs:
           fetch-depth: 0
       - uses: astral-sh/setup-uv@v5
       - run: uv build
-      - name: Debug OIDC token claims
-        run: |
-          TOKEN="${{ github.token }}"
-          echo "Token header and payload (claims):"
-          echo "$TOKEN" | cut -d. -f2 | base64 -d | python3 -m json.tool || echo "Could not decode"
-          echo "---"
-      - run: uv publish --trusted-publishing always --publish-url https://test.pypi.org/legacy/ --check-url https://test.pypi.org/simple/ -v
+      - run: uv publish
