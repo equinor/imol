@@ -65,3 +65,6 @@ minversion = "8.0"
 testpaths = ["tests"]
 addopts = ["-ra", "--strict-config", "--strict-markers"]
 xfail_strict = true
+
+[tool.uv]
+trusted-publishing = "always"

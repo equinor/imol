@@ -19,4 +19,4 @@ jobs:
           fetch-depth: 0
       - uses: astral-sh/setup-uv@v5
       - run: uv build
-      - run: uv publish --trusted-publishing always
+      - run: uv publish
