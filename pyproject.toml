@@ -3,15 +3,44 @@ name = "imol"
 dynamic = ["version"]
 description = "Estimate the inverse Monin-Obukhov length from bulk parameters"
 license = "MIT"
+license-files = ["LICENSE"]
 authors = [{ name = "Knut S. Seim", email = "knss@equinor.com" }]
 readme = "README.md"
 requires-python = ">=3.10"
+keywords = [
+    "monin-obukhov",
+    "atmospheric-stability",
+    "boundary-layer",
+    "meteorology",
+    "wind-energy",
+    "offshore",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Atmospheric Science",
+    "Topic :: Scientific/Engineering :: Physics",
+]
 dependencies = [
     "numpy>=2,<3",
     "scipy",
     "xarray",
     "pandas>=2,<3",
 ]
+
+[project.urls]
+Homepage = "https://github.com/equinor/imol"
+Repository = "https://github.com/equinor/imol"
+Issues = "https://github.com/equinor/imol/issues"
 
 [dependency-groups]
 dev = [
@@ -30,3 +59,9 @@ local_scheme = "no-local-version"
 
 [tool.hatch.build.targets.wheel]
 packages = ["imol"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = ["-ra", "--strict-config", "--strict-markers"]
+xfail_strict = true
