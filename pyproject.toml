@@ -30,12 +30,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Atmospheric Science",
     "Topic :: Scientific/Engineering :: Physics",
 ]
-dependencies = [
-    "numpy>=2,<3",
-    "scipy",
-    "xarray",
-    "pandas>=2,<3",
-]
+dependencies = ["numpy>=2,<3", "scipy", "xarray", "pandas>=2,<3"]
 
 [project.urls]
 Homepage = "https://github.com/equinor/imol"
@@ -43,9 +38,7 @@ Repository = "https://github.com/equinor/imol"
 Issues = "https://github.com/equinor/imol/issues"
 
 [dependency-groups]
-dev = [
-    "pytest>=8,<9",
-]
+dev = ["pytest>=8,<9", "ruff>=0.15"]
 
 [build-system]
 requires = ["hatchling", "hatch-vcs"]
@@ -68,3 +61,12 @@ xfail_strict = true
 
 [tool.uv]
 trusted-publishing = "always"
+
+[tool.pyrefly]
+project-includes = ["**/*.py*", "**/*.ipynb"]
+
+[tool.ruff]
+extend-exclude = ["*.ipynb"]
+
+[tool.ruff.lint]
+extend-select = ["E4", "E7", "E9", "F", "I"]

@@ -1,9 +1,11 @@
+import sys
+import warnings
+
 import numpy as np
 import xarray as xr
 from scipy.optimize import root
-import warnings
-import sys
-from imol.stability_functions import AMOK, HB88, CB05
+
+from imol.stability_functions import AMOK, CB05, HB88
 
 
 class iMOL:
