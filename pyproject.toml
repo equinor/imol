@@ -38,7 +38,7 @@ Repository = "https://github.com/equinor/imol"
 Issues = "https://github.com/equinor/imol/issues"
 
 [dependency-groups]
-dev = ["pytest>=8,<9", "ruff>=0.15"]
+dev = ["pytest>=8,<10", "ruff>=0.15"]
 
 [build-system]
 requires = ["hatchling", "hatch-vcs"]
