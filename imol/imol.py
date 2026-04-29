@@ -1,4 +1,3 @@
-import sys
 import warnings
 
 import numpy as np
@@ -97,7 +96,7 @@ class iMOL:
         elif stab_func is None:
             return AMOK(params=params)
         else:
-            sys.exit(
+            raise ValueError(
                 f"{stab_func} is not a valid stability function. Choose {', '.join(stab_funcs.keys())}, or leave it as None to use the default AMOK."
             )
 
@@ -364,7 +363,7 @@ class iMOL:
                     self.invLiter(Ts[n], zt, T[n], zu, U[n], tol=tol, maxiter=maxiter)
                 )
             else:
-                sys.exit("No method {}".format(method))
+                raise ValueError(f"No method {method}")
         if calc:
             print(
                 "Ws    : {:4.1f} m/s\nTair  : {:4.1f} degC".format(U[0], T[0] - 273.15)
