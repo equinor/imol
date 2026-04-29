@@ -22,12 +22,22 @@ class AMOK:
             for key, val in params.items():
                 setattr(self, key, val)
 
-        if (self.ams == 5) & (self.nms == 1) & (self.amu == -19.3) & (self.nmu == -4):
+        if (
+            (self.ams == 5)
+            and (self.nms == 1)
+            and (self.amu == -19.3)
+            and (self.nmu == -4)
+        ):
             self.psim = self.apsim
         else:
             self.psim = self.spsim
 
-        if (self.ahs == 7.8) & (self.nhs == 1) & (self.ahu == -12) & (self.nhu == -2):
+        if (
+            (self.ahs == 7.8)
+            and (self.nhs == 1)
+            and (self.ahu == -12)
+            and (self.nhu == -2)
+        ):
             self.psih = self.apsih
         else:
             self.psih = self.spsih

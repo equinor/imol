@@ -180,7 +180,7 @@ class iMOL:
             invL = self.get_invL(zt, zu, z0, Rb)
             err = np.inf
             n = 0
-            while (err > tol) & (n <= maxiter):
+            while (err > tol) and (n <= maxiter):
                 if n:
                     invL = self.get_invL(
                         zt, zu, z0, Rb, self.psim(zu * invL), self.psih(zt * invL)
@@ -197,7 +197,7 @@ class iMOL:
                     (invL, us, ths, z0, n, err) = (-9.999, 0, -9.999, 0, 1, -9.9999e-99)
                     break
                 n += 1
-        if (n > maxiter) & (err > tol):
+        if (n > maxiter) and (err > tol):
             icalm = 2
             (invL, us, ths, z0) = (-9.999, 0, -9.999, 0)
         if icalm == 0:
