@@ -19,7 +19,7 @@ class Test_imol:
     ds = df.to_xarray()
     ds.attrs = dict(zt=13, zu=15)
 
-    def test_default_stabf_root(self, var="invL"):
+    def test_default_stabf_root(self, var: str = "invL") -> None:
         pm = iMOL(stab_func="AMOK")
         ds_out = pm(self.ds)
 
@@ -42,7 +42,7 @@ class Test_imol:
             rtol=0.02,
         )
 
-    def test_default_stabf_iter(self, var="invL"):
+    def test_default_stabf_iter(self, var: str = "invL") -> None:
         pm = iMOL(stab_func="AMOK")
         ds_out = pm(self.ds, method="iter")
 
@@ -65,7 +65,7 @@ class Test_imol:
             rtol=0.02,
         )
 
-    def test_HB88_stabf(self, var="invL"):
+    def test_HB88_stabf(self, var: str = "invL") -> None:
         pm = iMOL(stab_func="HB88")
         ds_out = pm(self.ds)
 
@@ -82,7 +82,7 @@ class Test_imol:
             rtol=0.04,
         )
 
-    def test_HC05_stabf(self, var="invL"):
+    def test_HC05_stabf(self, var: str = "invL") -> None:
         pm = iMOL(stab_func="CB05")
         ds_out = pm(self.ds)
 

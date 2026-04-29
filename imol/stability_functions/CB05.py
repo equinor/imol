@@ -2,30 +2,24 @@ import numpy as np
 
 
 class CB05:
-    def __init__(self, params: dict = None):
-        # Stability function constants
+    def __init__(self, params: dict[str, float] | None = None) -> None:
         # CB05 (Cheng Y. & Brutsaert W., 2005) stability function parameters (only stable conditions)
-        default_params = {
-            "amu": -19.3,
-            "nmu": -4,
-            "ahu": -12,
-            "nhu": -2,
-            "as_cb": 6.1,
-            "bs_cb": 2.5,
-            "cs_cb": 5.3,
-            "ds_cb": 1.1,
-        }
+        self.amu = -19.3
+        self.nmu = -4
+        self.ahu = -12
+        self.nhu = -2
+        self.as_cb = 6.1
+        self.bs_cb = 2.5
+        self.cs_cb = 5.3
+        self.ds_cb = 1.1
+        if params is not None:
+            for key, val in params.items():
+                setattr(self, key, val)
 
-        actual_params = (
-            default_params if params is None else {**default_params, **params}
-        )
-        for key, val in actual_params.items():
-            setattr(self, key, val)
-
-    def phi(self, a, n, z):
+    def phi(self, a: float, n: float, z: float) -> float:
         return (1 + a * z) ** (1 / n)
 
-    def phim(self, z):
+    def phim(self, z: float) -> float:
         if z >= 0:
             a = self.as_cb
             b = self.bs_cb
@@ -37,7 +31,7 @@ class CB05:
             n = self.nmu
             return self.phi(a, n, z)
 
-    def phih(self, z):
+    def phih(self, z: float) -> float:
         if z >= 0:
             c = self.cs_cb
             d = self.ds_cb
@@ -49,7 +43,7 @@ class CB05:
             n = self.nhu
             return self.phi(a, n, z)
 
-    def psim(self, z):
+    def psim(self, z: float) -> float:
         if z >= 0:
             a = self.as_cb
             b = self.bs_cb
@@ -64,7 +58,7 @@ class CB05:
                 )
             )
 
-    def psih(self, z):
+    def psih(self, z: float) -> float:
         if z >= 0:
             c = self.cs_cb
             d = self.ds_cb

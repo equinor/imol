@@ -30,13 +30,13 @@ class iMOL:
 
     def __init__(
         self,
-        z0=1e-4,
-        calmth=3,
-        tol=np.finfo(float).eps,
-        maxiter=50,
-        stab_func=None,
-        stab_func_params=None,
-    ):
+        z0: float = 1e-4,
+        calmth: float = 3.0,
+        tol: float = np.finfo(float).eps,
+        maxiter: int = 50,
+        stab_func: str | None = None,
+        stab_func_params: dict[str, float] | None = None,
+    ) -> None:
         self.z0 = z0
         self.calmth = calmth
         self.tol = tol
@@ -48,8 +48,14 @@ class iMOL:
         self.psih = self.stab_func.psih
 
     def __call__(
-        self, ds, zt=2.0, zu=10.0, method="root", tol=np.finfo(float).eps, maxiter=50
-    ):
+        self,
+        ds: xr.Dataset,
+        zt: float = 2.0,
+        zu: float = 10.0,
+        method: str = "root",
+        tol: float = np.finfo(float).eps,
+        maxiter: int = 50,
+    ) -> xr.Dataset:
         # assert(ds == xr.core.dataset.Dataset, 'Input has to be a xarray dataset with coordinate time')
         if "zt" in list(ds.attrs.keys()):
             zt = ds.attrs["zt"]
@@ -80,7 +86,11 @@ class iMOL:
             maxiter=maxiter,
         )
 
-    def get_stability_function(self, stab_func, params):
+    def get_stability_function(
+        self,
+        stab_func: str | None,
+        params: dict[str, float] | None,
+    ) -> AMOK | HB88 | CB05:
         stab_funcs = {"AMOK": AMOK, "HB88": HB88, "CB05": CB05}
         if stab_func in stab_funcs:
             return stab_funcs[stab_func](params=params)
@@ -91,20 +101,41 @@ class iMOL:
                 f"{stab_func} is not a valid stability function. Choose {', '.join(stab_funcs.keys())}, or leave it as None to use the default AMOK."
             )
 
-    def f(self, x, invL, zu, U, zt, Ts, pt, k, v):
+    def f(
+        self,
+        x: np.ndarray,
+        invL: float,
+        zu: float,
+        U: float,
+        zt: float,
+        Ts: float,
+        pt: float,
+        k: float,
+        v: float,
+    ) -> tuple[float, float]:
         us, ths = x
         z1 = zu * invL
         z2 = zt * invL
         z0 = self.get_z0(us, v)
         if z0 <= 0:
-            return [np.nan, np.nan]
-        else:
-            return (
-                U - (us / k) * (np.log(zu / z0) - self.psim(z1)),
-                pt - Ts - (ths / k) * (np.log(zt / z0) - self.psih(z2)),
-            )
+            return (np.nan, np.nan)
+        return (
+            U - (us / k) * (np.log(zu / z0) - self.psim(z1)),
+            pt - Ts - (ths / k) * (np.log(zt / z0) - self.psih(z2)),
+        )
 
-    def df(self, x, invL, zu, U, zt, Ts, pt, k, _):
+    def df(
+        self,
+        x: np.ndarray,
+        invL: float,
+        zu: float,
+        U: float,
+        zt: float,
+        Ts: float,
+        pt: float,
+        k: float,
+        _: float,
+    ) -> list[list[float]]:
         us, ths = x
         z1 = zu * invL
         z2 = zt * invL
@@ -117,13 +148,29 @@ class iMOL:
             ],
         ]
 
-    def invLiter(self, Ts, zt, T, zu, U, tol=1e-7, maxiter=50):
+    def invLiter(
+        self,
+        Ts: float,
+        zt: float,
+        T: float,
+        zu: float,
+        U: float,
+        tol: float = 1e-7,
+        maxiter: int = 50,
+    ) -> tuple[float, float, float, float, float, int, int, float]:
         # Potential temperature
         pt = T + self.lr * zt
         icalm = 0
+        # Calm-case sentinel defaults; overwritten below when icalm == 0
+        invL = -9.999
+        us = 0.0
+        ths = -9.999
+        z0 = 0.0
+        n = 1
+        err = -9.9999e-99
+        usold = 0.0
         if U < self.calmth:
             icalm = 1
-            (invL, us, ths, z0, n, err) = (-9.999, 0, -9.999, 0, 1, -9.9999e-99)
         if icalm == 0:
             v = self.get_v(T)
             # Bulk Richardson number
@@ -157,7 +204,16 @@ class iMOL:
             invL = (self.k * self.g * ths) / (Ts * us**2)
         return pt, invL, us, ths, z0, icalm, n - 1, err
 
-    def invLroot(self, Ts, zt, T, zu, U, tol=np.finfo(float).eps, maxiter=50):
+    def invLroot(
+        self,
+        Ts: float,
+        zt: float,
+        T: float,
+        zu: float,
+        U: float,
+        tol: float = np.finfo(float).eps,
+        maxiter: int = 50,
+    ) -> tuple[float, float, float, float, float, int, int, float]:
         # Potential temperature
         pt = T + self.lr * zt
         icalm = 0
@@ -219,39 +275,62 @@ class iMOL:
 
         return pt, invL, us, ths, z0, icalm, fev, fse
 
-    def get_Rb(self, Ts, U, pt):
+    def get_Rb(self, Ts: float, U: float, pt: float) -> float:
         return self.g * self.zref * (pt - Ts) / (Ts * U**2)
 
-    def get_invL(self, zt, zu, z0, Rb, x=0, y=0):
+    def get_invL(
+        self,
+        zt: float,
+        zu: float,
+        z0: float,
+        Rb: float,
+        x: float = 0,
+        y: float = 0,
+    ) -> float:
         return (Rb / self.zref) * ((np.log(zu / z0) - x) ** 2) / (np.log(zt / z0) - y)
 
-    def get_ths(self, Ts, zt, pt, invL, z0, x=0):
+    def get_ths(
+        self,
+        Ts: float,
+        zt: float,
+        pt: float,
+        invL: float,
+        z0: float,
+        x: float = 0,
+    ) -> float:
         return (pt - Ts) * (self.k / (np.log(zt / z0) - self.psih(zt * invL) + x))
 
-    def get_us(self, zu, U, invL, z0, x=0):
+    def get_us(
+        self,
+        zu: float,
+        U: float,
+        invL: float,
+        z0: float,
+        x: float = 0,
+    ) -> float:
         return U * (self.k / (np.log(zu / z0) - self.psim(zu * invL) + x))
 
-    def get_v(self, t):
+    def get_v(self, t: float) -> float:
         # Kinematic viscosity of air - m**2/s
         return (2.791e-7 * t**0.7355) / self.rho  # 1.48e-5
 
-    def get_z0(self, us, v):
+    def get_z0(self, us: float, v: float) -> float:
         return self.Ac * us**2 / self.g + self.Bc * v / us
 
     def calcInvL(
         self,
-        Ts,
-        zt,
-        T,
-        zu,
-        U,
-        D=None,
-        time=None,
-        loc=None,
-        method="root",
-        tol=None,
-        maxiter=None,
-    ):
+        Ts: np.ndarray,
+        zt: float,
+        T: np.ndarray,
+        zu: float,
+        U: np.ndarray,
+        D: np.ndarray | None = None,
+        time: np.ndarray | None = None,
+        loc: str | None = None,
+        method: str = "root",
+        tol: float | None = None,
+        maxiter: int | None = None,
+    ) -> xr.Dataset:
         if time is None:
             Ts = np.array([Ts])
             T = np.array([T])
@@ -310,87 +389,84 @@ class iMOL:
                     int(icalm[0]), int(fev[0]), fse[0]
                 )
             )
-        else:
-            return xr.Dataset(
-                data_vars=dict(
-                    ws=(
-                        "time",
-                        U,
-                        {"description": "Wind velocity at height zu.", "unit": "m/s"},
-                    ),
-                    wd=(
-                        "time",
-                        D,
-                        {"description": "Wind direction at height zu.", "unit": "deg."},
-                    ),
-                    Ta=(
-                        "time",
-                        T,
-                        {"description": "Air temperature at height zt.", "unit": "K"},
-                    ),
-                    Ts=(
-                        "time",
-                        Ts,
-                        {"description": "Sea surface temperature.", "unit": "K"},
-                    ),
-                    pT=(
-                        "time",
-                        pt,
-                        {"description": "Potential temperature.", "unit": "K"},
-                    ),
-                    invL=(
-                        "time",
-                        invL,
-                        {
-                            "description": "Inverse Monin-Obukhov length, 1/L.",
-                            "unit": "1/m",
-                        },
-                    ),
-                    us=(
-                        "time",
-                        us,
-                        {"description": "Friction velocity, u*.", "unit": "-"},
-                    ),
-                    ths=(
-                        "time",
-                        ths,
-                        {
-                            "description": "Characteristic temperature scale, theta*.",
-                            "unit": "K",
-                        },
-                    ),
-                    z0=(
-                        "time",
-                        z0,
-                        {"description": "Surface roughness length.", "unit": "m"},
-                    ),
-                    iCalm=(
-                        "time",
-                        icalm,
-                        {
-                            "description": "Calmness flag = {0, 1, 2, 3, 4}. Valid solution when iCalm = 0."
-                        },
-                    ),
-                    fev=(
-                        "time",
-                        fev,
-                        {
-                            "description": "Function evaluations or number of iterations."
-                        },
-                    ),
-                    fse=(
-                        "time",
-                        fse,
-                        {"description": "Friction velocity function error."},
-                    ),
+        return xr.Dataset(
+            data_vars=dict(
+                ws=(
+                    "time",
+                    U,
+                    {"description": "Wind velocity at height zu.", "unit": "m/s"},
                 ),
-                coords=dict(
-                    time=time,
+                wd=(
+                    "time",
+                    D,
+                    {"description": "Wind direction at height zu.", "unit": "deg."},
                 ),
-                attrs=dict(
-                    desctiption=f"Inverse Monin-Obukhov length calculated with temperature at z={zt} m and wind speed at z={zu} m.",
-                    zt=zt,
-                    zu=zu,
-                    loc=loc,
+                Ta=(
+                    "time",
+                    T,
+                    {"description": "Air temperature at height zt.", "unit": "K"},
                 ),
-            )
+                Ts=(
+                    "time",
+                    Ts,
+                    {"description": "Sea surface temperature.", "unit": "K"},
+                ),
+                pT=(
+                    "time",
+                    pt,
+                    {"description": "Potential temperature.", "unit": "K"},
+                ),
+                invL=(
+                    "time",
+                    invL,
+                    {
+                        "description": "Inverse Monin-Obukhov length, 1/L.",
+                        "unit": "1/m",
+                    },
+                ),
+                us=(
+                    "time",
+                    us,
+                    {"description": "Friction velocity, u*.", "unit": "-"},
+                ),
+                ths=(
+                    "time",
+                    ths,
+                    {
+                        "description": "Characteristic temperature scale, theta*.",
+                        "unit": "K",
+                    },
+                ),
+                z0=(
+                    "time",
+                    z0,
+                    {"description": "Surface roughness length.", "unit": "m"},
+                ),
+                iCalm=(
+                    "time",
+                    icalm,
+                    {
+                        "description": "Calmness flag = {0, 1, 2, 3, 4}. Valid solution when iCalm = 0."
+                    },
+                ),
+                fev=(
+                    "time",
+                    fev,
+                    {"description": "Function evaluations or number of iterations."},
+                ),
+                fse=(
+                    "time",
+                    fse,
+                    {"description": "Friction velocity function error."},
+                ),
+            ),
+            coords=dict(
+                time=time,
+            ),
+            attrs=dict(
+                desctiption=f"Inverse Monin-Obukhov length calculated with temperature at z={zt} m and wind speed at z={zu} m.",
+                zt=zt,
+                zu=zu,
+                loc=loc,
+            ),
+        )

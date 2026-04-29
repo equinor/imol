@@ -64,6 +64,7 @@ trusted-publishing = "always"
 
 [tool.pyrefly]
 project-includes = ["**/*.py*", "**/*.ipynb"]
+project-excludes = ["examples/**"]
 
 [tool.ruff]
 extend-exclude = ["*.ipynb"]
