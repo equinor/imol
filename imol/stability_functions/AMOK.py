@@ -1,28 +1,26 @@
+from collections.abc import Callable
+
 import numpy as np
 from scipy.integrate import quad
 
 
 class AMOK:
-    def __init__(self, params: dict = None):
-        # Stability function constants
-        # These are the Fuga defaults, but may be changed by the user
-        # Using the defailts will speed up the calculations as an analytical
-        #  solution to the stability function integral is provided
-        default_params = {
-            "ams": 5,
-            "nms": 1,
-            "amu": -19.3,
-            "nmu": -4,
-            "ahs": 7.8,
-            "nhs": 1,
-            "ahu": -12,
-            "nhu": -2,
-        }
-        actual_params = (
-            default_params if params is None else {**default_params, **params}
-        )
-        for key, val in actual_params.items():
-            setattr(self, key, val)
+    psim: Callable[[float], float]
+    psih: Callable[[float], float]
+
+    def __init__(self, params: dict[str, float] | None = None) -> None:
+        # Fuga defaults; using these enables the analytical psim/psih path
+        self.ams = 5
+        self.nms = 1
+        self.amu = -19.3
+        self.nmu = -4
+        self.ahs = 7.8
+        self.nhs = 1
+        self.ahu = -12
+        self.nhu = -2
+        if params is not None:
+            for key, val in params.items():
+                setattr(self, key, val)
 
         if (self.ams == 5) & (self.nms == 1) & (self.amu == -19.3) & (self.nmu == -4):
             self.psim = self.apsim
@@ -34,10 +32,10 @@ class AMOK:
         else:
             self.psih = self.spsih
 
-    def phi(self, a, n, z):
+    def phi(self, a: float, n: float, z: float) -> float:
         return (1 + a * z) ** (1 / n)
 
-    def phim(self, z):
+    def phim(self, z: float) -> float:
         if z >= 0:
             a = self.ams
             n = self.nms
@@ -47,7 +45,7 @@ class AMOK:
             n = self.nmu
             return self.phi(a, n, z)
 
-    def phih(self, z):
+    def phih(self, z: float) -> float:
         if z >= 0:
             a = self.ahs
             n = self.nhs
@@ -57,13 +55,13 @@ class AMOK:
             n = self.nhu
             return self.phi(a, n, z)
 
-    def spsim(self, z):
+    def spsim(self, z: float) -> float:
         if z >= 0:
             return quad(lambda x: (1 - self.phim(x)) / x, 0, z)[0]
         else:
             return -quad(lambda x: (1 - self.phim(x)) / x, z, 0)[0]
 
-    def apsim(self, z):
+    def apsim(self, z: float) -> float:
         if z >= 0:
             a = self.ams
             return -a * z
@@ -77,13 +75,13 @@ class AMOK:
                 )
             )
 
-    def spsih(self, z):
+    def spsih(self, z: float) -> float:
         if z >= 0:
             return quad(lambda x: (1 - self.phih(x)) / x, 0, z)[0]
         else:
             return -quad(lambda x: (1 - self.phih(x)) / x, z, 0)[0]
 
-    def apsih(self, z):
+    def apsih(self, z: float) -> float:
         if z >= 0:
             a = self.ahs
             return -a * z

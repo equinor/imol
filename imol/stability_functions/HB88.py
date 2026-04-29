@@ -2,30 +2,24 @@ import numpy as np
 
 
 class HB88:
-    def __init__(self, params: dict = None):
-        # Stability function constants with default values
-        # HB88 () stability function parameters (only stable conditions)
-        default_params = {
-            "amu": -19.3,
-            "nmu": -4,
-            "ahu": -12,
-            "nhu": -2,
-            "as_hb": 1,
-            "bs_hb": 2 / 3,
-            "cs_hb": 5,
-            "ds_hb": 0.35,
-        }
+    def __init__(self, params: dict[str, float] | None = None) -> None:
+        # HB88 stability function parameters (only stable conditions)
+        self.amu = -19.3
+        self.nmu = -4
+        self.ahu = -12
+        self.nhu = -2
+        self.as_hb = 1
+        self.bs_hb = 2 / 3
+        self.cs_hb = 5
+        self.ds_hb = 0.35
+        if params is not None:
+            for key, val in params.items():
+                setattr(self, key, val)
 
-        actual_params = (
-            default_params if params is None else {**default_params, **params}
-        )
-        for key, val in actual_params.items():
-            setattr(self, key, val)
-
-    def phi(self, a, n, z):
+    def phi(self, a: float, n: float, z: float) -> float:
         return (1 + a * z) ** (1 / n)
 
-    def phim(self, z):
+    def phim(self, z: float) -> float:
         if z >= 0:
             a = self.as_hb
             b = self.bs_hb
@@ -39,7 +33,7 @@ class HB88:
             n = self.nmu
             return self.phi(a, n, z)
 
-    def phih(self, z):
+    def phih(self, z: float) -> float:
         if z >= 0:
             a = self.as_hb
             b = self.bs_hb
@@ -55,7 +49,7 @@ class HB88:
             n = self.nhu
             return self.phi(a, n, z)
 
-    def psim(self, z):
+    def psim(self, z: float) -> float:
         if z >= 0:
             a = self.as_hb
             b = self.bs_hb
@@ -72,7 +66,7 @@ class HB88:
                 )
             )
 
-    def psih(self, z):
+    def psih(self, z: float) -> float:
         if z >= 0:
             a = self.as_hb
             b = self.bs_hb
